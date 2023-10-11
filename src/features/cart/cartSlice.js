@@ -58,6 +58,8 @@ export const {
 
 export default cartSlice.reducer;
 
+export const getCart = (state) => state.cart.cart;
+
 // using the selector hook to access the cart slice state then going into the cart array to use the reduce function in order to calculate the total quantity of he items inside of the cart
 export const getTotalCartQuantity = (state) =>
   state.cart.cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -65,3 +67,5 @@ export const getTotalCartQuantity = (state) =>
 
 export const getTotalCartPrice = (state) =>
   state.cart.cart.reduce((sum, item) => sum + item.totalPrice, 0);
+
+// using selectors like this can make performance issues in larger apps, to avoid it, search for "reselect" in redux
