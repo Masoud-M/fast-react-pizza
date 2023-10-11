@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { clearCart, getCart } from "./cartSlice";
 import LinkButton from "../../ui/LinkButton";
@@ -21,7 +20,7 @@ function Cart() {
 
       <ul className="mt-3 divide-y divide-stone-200 border-b border-stone-200">
         {cart.map((item) => (
-          <CartItem item={item} key={item.key} />
+          <CartItem item={item} key={item.id} />
         ))}
       </ul>
 

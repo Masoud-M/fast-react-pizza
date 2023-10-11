@@ -68,4 +68,8 @@ export const getTotalCartQuantity = (state) =>
 export const getTotalCartPrice = (state) =>
   state.cart.cart.reduce((sum, item) => sum + item.totalPrice, 0);
 
+// checking to see if there is any item in the cart that matches to the passed in Id, then using optional chaining to get access to the quantity if it is available
+export const getCurrentQuantityById = (id) => (state) =>
+  state.cart.cart.find((item) => item.pizzaId === id)?.quantity ?? 0;
+
 // using selectors like this can make performance issues in larger apps, to avoid it, search for "reselect" in redux
