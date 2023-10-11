@@ -1,17 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  // cart: [],
+  cart: [],
 
-  cart: [
-    {
-      pizzaId: 12,
-      name: "Mediterranean",
-      quantity: 2,
-      unitPrice: 16,
-      totalPrice: 32,
-    },
-  ],
+  //   cart: [
+  //     {
+  //       pizzaId: 12,
+  //       name: "Mediterranean",
+  //       quantity: 2,
+  //       unitPrice: 16,
+  //       totalPrice: 32,
+  //     },
+  //   ],
 };
 
 const cartSlice = createSlice({
@@ -57,3 +57,11 @@ export const {
 } = cartSlice.actions;
 
 export default cartSlice.reducer;
+
+// using the selector hook to access the cart slice state then going into the cart array to use the reduce function in order to calculate the total quantity of he items inside of the cart
+export const getTotalCartQuantity = (state) =>
+  state.cart.cart.reduce((sum, item) => sum + item.quantity, 0);
+//when using redux it's best to do this type of data manipulation inside of the selector instead of the component
+
+export const getTotalCartPrice = (state) =>
+  state.cart.cart.reduce((sum, item) => sum + item.totalPrice, 0);
