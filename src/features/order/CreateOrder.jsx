@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { Form, redirect, useActionData, useNavigation } from "react-router-dom";
 import { createOrder } from "../../services/apiRestaurant";
-import Button from "../../ui/Button";
 import { useSelector } from "react-redux";
+import { clearCart, getCart, getTotalCartPrice } from "../cart/cartSlice";
+import Button from "../../ui/Button";
+import EmptyCart from "../cart/EmptyCart";
+import store from "../../store";
+import { formatCurrency } from "../../utils/helpers";
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -10,31 +14,8 @@ const isValidPhone = (str) =>
     str,
   );
 
-const fakeCart = [
-  {
-    pizzaId: 12,
-    name: "Mediterranean",
-    quantity: 2,
-    unitPrice: 16,
-    totalPrice: 32,
-  },
-  {
-    pizzaId: 6,
-    name: "Vegetable",
-    quantity: 1,
-    unitPrice: 13,
-    totalPrice: 13,
-  },
-  {
-    pizzaId: 11,
-    name: "Spinach and Mushroom",
-    quantity: 1,
-    unitPrice: 15,
-    totalPrice: 15,
-  },
-];
-
 function CreateOrder() {
+  const [withPriority, setWithPriority] = useState(false);
   const username = useSelector((state) => state.user.username);
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
@@ -42,8 +23,12 @@ function CreateOrder() {
   // this component is connected to the action, therefore we can use the useActionData hook from react router to return us the result of the action which in this case are errors
   const formErrors = useActionData();
 
-  // const [withPriority, setWithPriority] = useState(false);
-  const cart = fakeCart;
+  const cart = useSelector(getCart);
+  const totalCartPrice = useSelector(getTotalCartPrice);
+  const priorityPrice = withPriority ? totalCartPrice * 0.2 : 0;
+  const totalPrice = totalCartPrice + priorityPrice;
+
+  if (!cart.length) return <EmptyCart />;
 
   return (
     <div className="px-4 py-6">
@@ -92,8 +77,8 @@ function CreateOrder() {
             type="checkbox"
             name="priority"
             id="priority"
-            // value={withPriority}
-            // onChange={(e) => setWithPriority(e.target.checked)}
+            value={withPriority}
+            onChange={(e) => setWithPriority(e.target.checked)}
           />
           <label className="font-medium" htmlFor="priority">
             Want to yo give your order priority?
@@ -104,7 +89,9 @@ function CreateOrder() {
           {/* using a hidden input to pass in cart values as the form get submitted */}
           <input type="hidden" name="cart" value={JSON.stringify(cart)} />
           <Button type="primary" disabled={isSubmitting}>
-            {isSubmitting ? "Placing order..." : "Order now"}
+            {isSubmitting
+              ? "Placing order..."
+              : `Order now for ${formatCurrency(totalPrice)}`}
           </Button>
         </div>
       </Form>
@@ -126,7 +113,7 @@ export async function action({ request }) {
     cart: JSON.parse(data.cart),
 
     // turning priority to boolean value
-    priority: data.priority === "on",
+    priority: data.priority === "true",
   };
 
   const errors = {};
@@ -138,6 +125,9 @@ export async function action({ request }) {
 
   // if everything is okay create new order and redirect
   const newOrder = await createOrder(order);
+
+  // since we can only use dispatching function in components and not here, we imported the store and used dispatch directly to clear the cart after submitting a new order
+  store.dispatch(clearCart());
 
   // since we can use navigate inside this function, react router provided us with redirect
   return redirect(`/order/${newOrder.id}`);
